@@ -15,6 +15,7 @@ ORDERED_OBJS += \
 "./Motor_Driver.obj" \
 "./main.obj" \
 "./system_msp432p401r.obj" \
+"./test.obj" \
 "./ccs/startup_msp432p401r_ccs.obj" \
 "../msp432p401r.cmd" \
 $(GEN_CMDS__FLAG) \
@@ -167,8 +168,8 @@ Project\ (WIP\ Integrate).hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "ESP8266_UART.obj" "HCSR04.obj" "Motor_Driver.obj" "main.obj" "system_msp432p401r.obj" "ccs\startup_msp432p401r_ccs.obj" 
-	-$(RM) "ESP8266_UART.d" "HCSR04.d" "Motor_Driver.d" "main.d" "system_msp432p401r.d" "ccs\startup_msp432p401r_ccs.d" 
+	-$(RM) "ESP8266_UART.obj" "HCSR04.obj" "Motor_Driver.obj" "main.obj" "system_msp432p401r.obj" "test.obj" "ccs\startup_msp432p401r_ccs.obj" 
+	-$(RM) "ESP8266_UART.d" "HCSR04.d" "Motor_Driver.d" "main.d" "system_msp432p401r.d" "test.d" "ccs\startup_msp432p401r_ccs.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
