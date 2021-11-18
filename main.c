@@ -6,7 +6,7 @@
 void main()
 {
     MAP_WDT_A_holdTimer();
-
+    /*test commit*/
     /*Ensure MSP432 is Running at 24 MHz*/
     FlashCtl_setWaitState(FLASH_BANK0, 2);
     FlashCtl_setWaitState(FLASH_BANK1, 2);
