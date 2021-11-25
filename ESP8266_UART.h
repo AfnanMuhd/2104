@@ -14,4 +14,4 @@
 void esp8266StartUp(void);
 void ESP8266Terminal(void);
 void UARTStartUp(void);
-void UART_Write(uint32_t UART, uint8_t *Data, uint32_t Size);
+void UART_Write(uint8_t *Data);

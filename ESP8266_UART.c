@@ -11,51 +11,102 @@ volatile uint32_t UARTA0ReadIndex;
 volatile uint32_t UARTA0ReceiveIndex = 0;
 volatile bool UARTA0Receive = false;
 
+void UARTStartUp(void)
+{
+    eUSCI_UART_ConfigV1 UART0Config =
+    {
+         EUSCI_A_UART_CLOCKSOURCE_SMCLK,
+         13,
+         0,
+         37,
+         EUSCI_A_UART_NO_PARITY,
+         EUSCI_A_UART_LSB_FIRST,
+         EUSCI_A_UART_ONE_STOP_BIT,
+         EUSCI_A_UART_MODE,
+         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
+    };
+
+    eUSCI_UART_ConfigV1 UART2Config =
+    {
+         EUSCI_A_UART_CLOCKSOURCE_SMCLK,
+         13,
+         0,
+         37,
+         EUSCI_A_UART_NO_PARITY,
+         EUSCI_A_UART_LSB_FIRST,
+         EUSCI_A_UART_ONE_STOP_BIT,
+         EUSCI_A_UART_MODE,
+         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
+    };
+
+    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
+    MAP_UART_initModule(EUSCI_A0_BASE, &UART0Config);
+    MAP_UART_enableModule(EUSCI_A0_BASE);
+    MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+    MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
+
+    /*Initialize required hardware peripherals for the ESP8266*/
+    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
+    MAP_UART_initModule(EUSCI_A2_BASE, &UART2Config);
+    MAP_UART_enableModule(EUSCI_A2_BASE);
+    MAP_UART_enableInterrupt(EUSCI_A2_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+    MAP_Interrupt_enableInterrupt(INT_EUSCIA2);
+}
+
 void esp8266StartUp(void)
 {
-    UART_Write(EUSCI_A2_BASE, "ATE0\r\n", 6);
-    while(UARTA2ReceiveIndex > 0)
-        UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+    unsigned short count = 0;
+    uint8_t *commands[6];
+    commands[0] ="AT\r\n";
+    commands[1] = "ATE1\r\n";
+    commands[2] ="AT+CIPMUX=1\r\n";
+    commands[3] ="AT+CIPSERVER=1,80\r\n";
+    commands[4] ="AT+CWLIF\r\n";
+    commands[5] = "AT+CIPSERVER=0\r\n";
 
-    UART_Write(EUSCI_A2_BASE, "AT\r\n", 4);
-    while(UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K')
+    while(ESPStartUp == false)
     {
-        if(UARTA2Data[UARTA2ReceiveIndex-7] == 'E' || UARTA2ReceiveIndex == 0)
+        UART_Write(commands[count]);
+        __delay_cycles(24000);
+        if(UARTA2Receive == true)
         {
-            UART_Write(EUSCI_A2_BASE, "AT\r\n", 4);
-        }
-    }
-    while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+            while((UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K') && UARTA2Data[UARTA2ReceiveIndex-7] != 'E');
 
-    UART_Write(EUSCI_A2_BASE, "AT+CIPMUX=1\r\n", 13);
-    while(UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K')
-    {
-        if(UARTA2Data[UARTA2ReceiveIndex-7] == 'E')
-        {
-            UART_Write(EUSCI_A2_BASE, "AT+CWLIF\r\n", 11);
-            if(UARTA2Data[UARTA2ReceiveIndex-4] != 'O' && UARTA2Data[UARTA2ReceiveIndex-3] != 'K') UART_Write(EUSCI_A2_BASE, "AT+CIPMUX=1\r\n", 13);
-        }
-    }
-    while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
-
-    UART_Write(EUSCI_A2_BASE, "AT+CIPSERVER=1,80\r\n", 19);
-    while(UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K')
-    {
-        if(UARTA2Data[UARTA2ReceiveIndex-7] == 'E')
-        {
-            if(UARTA2Data[UARTA2ReceiveIndex-26] == 'l')
+            UARTA2Receive = false;
+            if(UARTA2Data[UARTA2ReceiveIndex-4] == 'O' && UARTA2Data[UARTA2ReceiveIndex-3] == 'K')
             {
-                UARTA2Data[UARTA2ReceiveIndex-4] = 'O';
-                UARTA2Data[UARTA2ReceiveIndex-3] = 'K';
-                ESPStartUp = true;
+                while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+                count++;
+                if(count == 4) ESPStartUp = true;
             }
-            else UART_Write(EUSCI_A2_BASE, "AT+CIPSERVER=1,80\r\n", 13);
+            else if(UARTA2Data[UARTA2ReceiveIndex-7] == 'E')
+            {
+                if(count == 2)
+                {
+                    while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+                    UART_Write(commands[4]);
+                    __delay_cycles(240000);
+                    if(UARTA2Data[UARTA2ReceiveIndex-4] == 'O' && UARTA2Data[UARTA2ReceiveIndex-3] == 'K')
+                    {
+                        UART_Write(commands[5]);
+                        __delay_cycles(24000);
+                    }
+                    else while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+                }
+                else if(count == 3)
+                {
+                    if(UARTA2Data[UARTA2ReceiveIndex-26] == 'l') ESPStartUp = true;
+                    else while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+                }
+            }
+            else
+            {
+                while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+            }
         }
     }
-    while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
-    if(ESPStartUp == false) MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
-    else MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
-    ESPStartUp = true;
+    MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
+    MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
 }
 
 void ESP8266Terminal(void)
@@ -73,13 +124,13 @@ void ESP8266Terminal(void)
     }
 }
 
-void UART_Write(uint32_t UART, uint8_t *Data, uint32_t Size)
+void UART_Write(uint8_t *Data)
 {
     unsigned short i = 0;
-    while(i <= Size)
+    while(*(Data+i))
     {
-        UART_transmitData(UART, *(Data+i));  // Write the character at the location specified by pointer
-        i++;                                 // Increment pointer to point to the next character
+        UART_transmitData(EUSCI_A2_BASE, *(Data+i));  // Write the character at the location specified by pointer
+        i++;                                             // Increment pointer to point to the next character
     }
 }
 
@@ -139,13 +190,11 @@ void EUSCIA2_IRQHandler(void)
     {
         if(UARTA2Data[UARTA2ReceiveIndex-9] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'T')
         {
-            MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN2);
         }
         else if(UARTA2Data[UARTA2ReceiveIndex-8] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'D')
         {
-            MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN0);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN1);
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
         }
@@ -179,46 +228,4 @@ void EUSCIA2_IRQHandler(void)
 
         UARTA2Receive = false;
     }
-}
-
-void UARTStartUp(void)
-{
-    eUSCI_UART_ConfigV1 UART0Config =
-    {
-         EUSCI_A_UART_CLOCKSOURCE_SMCLK,
-         13,
-         0,
-         37,
-         EUSCI_A_UART_NO_PARITY,
-         EUSCI_A_UART_LSB_FIRST,
-         EUSCI_A_UART_ONE_STOP_BIT,
-         EUSCI_A_UART_MODE,
-         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
-    };
-
-    eUSCI_UART_ConfigV1 UART2Config =
-    {
-         EUSCI_A_UART_CLOCKSOURCE_SMCLK,
-         13,
-         0,
-         37,
-         EUSCI_A_UART_NO_PARITY,
-         EUSCI_A_UART_LSB_FIRST,
-         EUSCI_A_UART_ONE_STOP_BIT,
-         EUSCI_A_UART_MODE,
-         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
-    };
-
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
-    MAP_UART_initModule(EUSCI_A0_BASE, &UART0Config);
-    MAP_UART_enableModule(EUSCI_A0_BASE);
-    MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
-    MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
-
-    /*Initialize required hardware peripherals for the ESP8266*/
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
-    MAP_UART_initModule(EUSCI_A2_BASE, &UART2Config);
-    MAP_UART_enableModule(EUSCI_A2_BASE);
-    MAP_UART_enableInterrupt(EUSCI_A2_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
-    MAP_Interrupt_enableInterrupt(INT_EUSCIA2);
 }
