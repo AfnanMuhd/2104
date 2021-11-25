@@ -6,10 +6,10 @@ volatile uint8_t UARTA2Data[UARTA2_BUFFERSIZE], ESP8266Data[ESP8266_BUFFER_SIZE]
 volatile uint32_t UARTA2ReadIndex, UARTA2ReceiveIndex = 0, index = 0, ESP8266DataIndex = 0;
 volatile bool UARTA2Receive = false, ESPStartUp = false;
 
-volatile uint8_t UARTA0Data[UARTA2_BUFFERSIZE];
+volatile uint8_t UARTA0Data[UARTA2_BUFFERSIZE], ID = 0;
 volatile uint32_t UARTA0ReadIndex;
 volatile uint32_t UARTA0ReceiveIndex = 0;
-volatile bool UARTA0Receive = false;
+volatile bool UARTA0Receive = false, instructionFlag = false;
 
 void UARTStartUp(void)
 {
@@ -58,7 +58,7 @@ void esp8266StartUp(void)
     unsigned short count = 0;
     uint8_t *commands[6];
     commands[0] ="AT\r\n";
-    commands[1] = "ATE1\r\n";
+    commands[1] = "ATE0\r\n";
     commands[2] ="AT+CIPMUX=1\r\n";
     commands[3] ="AT+CIPSERVER=1,80\r\n";
     commands[4] ="AT+CWLIF\r\n";
@@ -105,14 +105,73 @@ void esp8266StartUp(void)
             }
         }
     }
+    while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
     MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
 }
 
 void ESP8266Terminal(void)
 {
+    uint16_t mult = 1, speed = 0, distance = 0;
     while(1)
     {
+        if(UARTA2Receive == true && ESPStartUp == true && instructionFlag == true)
+        {
+            while(UARTA2Data[UARTA2ReceiveIndex] != ':') UARTA2ReceiveIndex--;
+
+
+            UARTA2ReceiveIndex++;
+            while(UARTA2Data[UARTA2ReceiveIndex] != 'e' || UARTA2Data[UARTA2ReceiveIndex+1] != 'n' || UARTA2Data[UARTA2ReceiveIndex+2] != 'd')
+            {
+                while(UARTA2Data[UARTA2ReceiveIndex] != '=') UARTA2ReceiveIndex++;
+                UARTA2ReceiveIndex++;
+
+                index = 0;
+
+                while(UARTA2Data[UARTA2ReceiveIndex] != '&')
+                {
+                    index++;
+                    UARTA2ReceiveIndex++;
+                }
+                UARTA2ReceiveIndex--;
+                while(index != 0)
+                {
+                    speed += ((UARTA2Data[UARTA2ReceiveIndex] - 48) * mult);
+                    mult *= 10;
+                    index--;
+                    UARTA2ReceiveIndex--;
+                }
+                mult = 1;
+                UARTA2ReceiveIndex++;
+
+                while(UARTA2Data[UARTA2ReceiveIndex] != '=') UARTA2ReceiveIndex++;
+                UARTA2ReceiveIndex++;
+
+                index = 0;
+
+                while(UARTA2Data[UARTA2ReceiveIndex] != '&')
+                {
+                    index++;
+                    UARTA2ReceiveIndex++;
+                }
+                UARTA2ReceiveIndex--;
+                while(index != 0)
+                {
+                    distance += ((UARTA2Data[UARTA2ReceiveIndex] - 48) * mult);
+                    mult *= 10;
+                    index--;
+                    UARTA2ReceiveIndex--;
+                }
+                mult = 1;
+                UARTA2ReceiveIndex++;
+
+                //ESP8266Data[index] = UARTA2Data[UARTA2ReceiveIndex];
+                //index++;
+                //UARTA2ReceiveIndex++;
+            }
+            UARTA2ReceiveIndex = 0;
+        }
+
         if((getHCSR04Distance() < MIN_DISTANCE))
         {
             setDirection('s');
@@ -178,54 +237,48 @@ void EUSCIA2_IRQHandler(void)
     {
         c = MAP_UART_receiveData(EUSCI_A2_BASE);
 
-        if(c == 10) UARTA2Receive = true;
+        if(c == '+') instructionFlag = true;
+        else if(c == 10 && instructionFlag != true) UARTA2Receive = true;
 
-        UARTA2Data[UARTA2ReceiveIndex] = c;
-        UARTA2ReceiveIndex++;
+
+        if(instructionFlag == true)
+        {
+            if(c == '+') UARTA2ReceiveIndex = 0;
+            UARTA2Data[UARTA2ReceiveIndex] = c;
+            UARTA2ReceiveIndex++;
+            if(c == '3' && UARTA2Data[UARTA2ReceiveIndex-2] == '2' && UARTA2Data[UARTA2ReceiveIndex-3] == '%')
+            {
+                UARTA2Data[UARTA2ReceiveIndex] = '\r';
+                UARTA2ReceiveIndex++;
+                UARTA2Data[UARTA2ReceiveIndex] = '\n';
+                UARTA2ReceiveIndex++;
+                UARTA2Receive = true;
+            }
+            else UARTA2Receive = false;
+        }
+        else
+        {
+            UARTA2Data[UARTA2ReceiveIndex] = c;
+            UARTA2ReceiveIndex++;
+        }
 
         MAP_UART_transmitData(EUSCI_A0_BASE, c);
     }
-
     if(UARTA2Receive == true && ESPStartUp == true)
     {
         if(UARTA2Data[UARTA2ReceiveIndex-9] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'T')
         {
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN2);
+            UARTA2ReceiveIndex = 0;
+            UARTA2Receive = false;
         }
         else if(UARTA2Data[UARTA2ReceiveIndex-8] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'D')
         {
             MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN1);
             MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
+            UARTA2ReceiveIndex = 0;
+            UARTA2Receive = false;
         }
-        if(UARTA2Data[0] == '+' && UARTA2Data[1] == 'I' && UARTA2Data[2] == 'P' && UARTA2Data[3] == 'D')
-        {
-            index = 4;
-            while(UARTA2Data[index] != ':') index++;
-            index++;
-
-            while(UARTA2Data[index] != '\r')
-            {
-                ESP8266Data[ESP8266DataIndex] = UARTA2Data[index];
-                index++;
-            }
-
-            //UART_Write(EUSCI_A0_BASE, &ESP8266Data, ESP8266DataIndex);
-            if(ESP8266Data[0] == 'A') MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN0);
-            else if(ESP8266Data[0] == 'a') MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);
-
-            if(ESP8266Data[0] == 'B') setDirection('l');
-
-            if(ESP8266Data[0] == 'C') setDirection('r');
-
-            if(ESP8266Data[0] == 'D') setDirection('f');
-            else if(ESP8266Data[0] == 'd') setDirection('b');
-
-            if(ESP8266Data[0] == 'E') setDirection('s');
-        }
-        UARTA2ReceiveIndex = 0;
-        index = 0;
-
-        UARTA2Receive = false;
     }
 }
