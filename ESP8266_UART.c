@@ -2,8 +2,8 @@
 #include "Motor_Driver.h"
 #include "HCSR04.h"
 
-volatile uint8_t UARTA2Data[UARTA2_BUFFERSIZE], ESP8266Data[ESP8266_BUFFER_SIZE], ESP8266ReceiveData[ESP8266_BUFFER_SIZE], Token[6] = {'a', '1', 'b', '2', 'c', '3'};
-volatile uint32_t UARTA2ReadIndex, UARTA2ReceiveIndex = 0, index = 0, ESP8266DataIndex = 0;
+volatile uint8_t UARTA2Data[UARTA2_BUFFERSIZE], ESP8266Data[ESP8266_BUFFER_SIZE], ESP8266ReceiveData[ESP8266_BUFFER_SIZE], Token[50] = { NULL };
+volatile uint32_t UARTA2ReadIndex, UARTA2ReceiveIndex = 0, index = 0, ESP8266DataIndex = 0, tokIndex = 0;
 volatile bool UARTA2Receive = false, ESPStartUp = false, connFlag = false;
 
 volatile uint8_t UARTA0Data[UARTA2_BUFFERSIZE];
@@ -111,13 +111,15 @@ void setToken(void)
     while(ESP8266Data[ESP8266DataIndex] != '=') ESP8266DataIndex++;
     ESP8266DataIndex++;
 
-    index = 0;
-    while(index != 6)
+    tokIndex = 1;
+    while(ESP8266Data[ESP8266DataIndex] != '&')
     {
-        Token[index] = ESP8266Data[ESP8266DataIndex];
-        index++;
+        Token[tokIndex] = ESP8266Data[ESP8266DataIndex];
+        tokIndex++;
         ESP8266DataIndex++;
     }
+    tokIndex--;
+    //Token[tokIndex] = '\0';
     ESP8266DataIndex = 0;
 }
 
@@ -127,7 +129,7 @@ void POST(uint8_t ID)
     uint16_t data[2] = {0, 0};
     uint8_t tok[6];
 
-    if(ESP8266Data[ESP8266DataIndex-3] != '3'&& ESP8266Data[ESP8266DataIndex-4] != '2' && ESP8266Data[ESP8266DataIndex-5] != '%')
+    if(ESP8266Data[ESP8266DataIndex-3] != '3' && ESP8266Data[ESP8266DataIndex-4] != '2' && ESP8266Data[ESP8266DataIndex-5] != '%')
     {
         while(ESP8266DataIndex > 0) ESP8266Data[--ESP8266DataIndex] = 0x00;
     }
@@ -141,7 +143,12 @@ void POST(uint8_t ID)
         part_cnt -= 2;
         ESP8266DataIndex += 5;
 
-        if(ESP8266Data[ESP8266DataIndex] == '0' && ESP8266Data[ESP8266DataIndex+1] == '&') setToken();
+        if(ESP8266Data[ESP8266DataIndex] == '0' && ESP8266Data[ESP8266DataIndex+1] == '&')
+        {
+            setToken();
+            //sendSuccess(ID);
+            GET(ID, 'T');
+        }
         else if(ESP8266Data[ESP8266DataIndex] == '1' && ESP8266Data[ESP8266DataIndex+1] == '&')
         {
             while(parts < part_cnt)
@@ -206,7 +213,23 @@ void POST(uint8_t ID)
 void sendSuccess(uint8_t ID)
 {
     bool sendFlag = false;
-    uint16_t index = 0;
+    uint16_t index;
+
+    char header[67];
+
+    strcpy(header,  "HTTP/1.1 200 OK\n\n");
+    //strcpy(dest, "This is destination");
+
+    //strcat(header, Token);
+    index = 17;
+    while(index != tokIndex)
+    {
+        header[index] = Token[index-17];
+        index++;
+    }
+    header[index] = '\0';
+
+    index = 0;
     while(!sendFlag)
     {
         UART_Write("AT+CIPSENDEX=0,2048\r\n");
@@ -221,7 +244,8 @@ void sendSuccess(uint8_t ID)
                 while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
                 while(!sendFlag)
                 {
-                    UART_Write("HTTP/1.1 200 OK\\0");
+                    //UART_Write("HTTP/1.1 200 OK\\0");
+                    UART_Write(header);
                     __delay_cycles(24000);
                     if(UARTA2ReceiveIndex > 0)
                     {
@@ -245,18 +269,39 @@ void sendSuccess(uint8_t ID)
 
 void GET(uint8_t ID, uint8_t type)
 {
+   char header[67];
+
+   strcpy(header,  "HTTP/1.1 200 OK\n\n");
+   //strcpy(dest, "This is destination");
+
+   //strcat(header, Token);
+   index = 17;
+    while(index != (tokIndex+17))
+    {
+        header[index] = Token[index-17];
+        index++;
+    }
+
+    index = 0;
     while(UARTA2Data[UARTA2ReceiveIndex-2] != '>' || UARTA2Data[UARTA2ReceiveIndex-1] != ' ')
     {
-        UART_Write("AT+CIPSENDEX=0,27\r\n");
+        UART_Write("AT+CIPSENDEX=0,39\r\n");
         __delay_cycles(24000);
     }
 
-    UART_Write("HTTP/1.1 200 OK\n\na1b2c3\\0");
+    //UART_Write("HTTP/1.1 200 OK\n\na1b2c3\\0");
+    //UART_Write(header);
     while(UARTA2Data[UARTA2ReceiveIndex-9] != 'S' || UARTA2Data[UARTA2ReceiveIndex-8] != 'E' || UARTA2Data[UARTA2ReceiveIndex-7] != 'N' || UARTA2Data[UARTA2ReceiveIndex-6] != 'D' || UARTA2Data[UARTA2ReceiveIndex-5] != ' ' || UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K')
     {
         //UART_Write("HTTP/1.1 200 OK\n\na1b2c3\\0");
         //UART_Write("AT+CIPSEND=0,27\r\n");
+        UART_Write(header);
         __delay_cycles(24000);
+        if(UARTA2ReceiveIndex > 11)
+        {
+            if(UARTA2Data[UARTA2ReceiveIndex-11] != 'b' || UARTA2Data[UARTA2ReceiveIndex-10] != 'u' || UARTA2Data[UARTA2ReceiveIndex-9] != 's' || UARTA2Data[UARTA2ReceiveIndex-8] != 'y')
+                while(UARTA2Data[UARTA2ReceiveIndex-9] != 'S' || UARTA2Data[UARTA2ReceiveIndex-8] != 'E' || UARTA2Data[UARTA2ReceiveIndex-7] != 'N' || UARTA2Data[UARTA2ReceiveIndex-6] != 'D' || UARTA2Data[UARTA2ReceiveIndex-5] != ' ' || UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K');
+        }
     }
 
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
