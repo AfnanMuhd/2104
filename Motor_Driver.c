@@ -36,6 +36,8 @@ void MotorSetup(void)
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN7);
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
+
+    setDirection('f');
 }
 
 void SetRightDirection(void)
@@ -74,8 +76,8 @@ void SetForwardDirection(void)
 
 
     /*right motor*/
-    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN7);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN7);
     pwmConfig2.dutyCycle = 30000;
 
 
