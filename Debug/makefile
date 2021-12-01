@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ti-cgt-arm_20.2.4.LTS
+CG_TOOL_ROOT := C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -153,14 +153,14 @@ all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 Project\ (WIP\ Integrate).out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: Arm Linker'
-	"C:/ti/ti-cgt-arm_20.2.4.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --advice:power=none --define=__MSP432P401R__ --define=DeviceFamily_MSP432P401x -g --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on -z -m"Project (WIP Integrate).map" --stack_size=512 -i"D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source" -i"C:/ti/ti-cgt-arm_20.2.4.LTS/lib" --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Project (WIP Integrate)_linkInfo.xml" --rom_model -o "Project (WIP Integrate).out" $(ORDERED_OBJS)
+	"C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/bin/armcl" -mv7M4 --code_state=16 --float_support=FPv4SPD16 -me --advice:power=none --define=__MSP432P401R__ --define=DeviceFamily_MSP432P401x -g --diag_warning=225 --diag_warning=255 --diag_wrap=off --display_error_number --gen_func_subsections=on -z -m"Project (WIP Integrate).map" --stack_size=512 -i"C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source" -i"C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/lib" --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Project (WIP Integrate)_linkInfo.xml" --rom_model -o "Project (WIP Integrate).out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
 Project\ (WIP\ Integrate).hex: $(EXE_OUTPUTS)
 	@echo 'Building secondary target: "$@"'
 	@echo 'Invoking: Arm Hex Utility'
-	"C:/ti/ti-cgt-arm_20.2.4.LTS/bin/armhex" --diag_wrap=off -o "Project (WIP Integrate).hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/bin/armhex" --diag_wrap=off -o "Project (WIP Integrate).hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building secondary target: "$@"'
 	@echo ' '
 

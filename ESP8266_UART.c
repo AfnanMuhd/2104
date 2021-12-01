@@ -55,20 +55,38 @@ void UARTStartUp(void)
 void esp8266StartUp(void)
 {
     unsigned short count = 0;
-    uint8_t *commands[7];
+    uint8_t *commands[9];
     commands[0] ="AT\r\n";
     commands[1] = "ATE0\r\n";
-    commands[2] ="AT+CIPMUX=1\r\n";
-    commands[3] ="AT+CIPSERVER=1,80\r\n";
-    commands[4] ="AT+CIPSTO=5\r\n";
-    commands[5] ="AT+CWLIF\r\n";
-    commands[6] = "AT+CIPSERVER=0\r\n";
+    commands[2] ="AT+CWMODE=2\r\n";
+    commands[3] ="AT+CWSAP=\"ROBOTIC_CAR2\",\"1234567890\",5,3\r\n";
+    commands[4] ="AT+CIPAP=\"192.168.4.1\"\r\n";
+    commands[5] ="AT+CIPSERVER=0\r\n";
+    commands[6] ="AT+CIPMUX=1\r\n";
+    commands[7] ="AT+CIPSERVER=1,80\r\n";
+    commands[8] ="AT+CIPSTO=5\r\n";
+    //commands[6] = "AT+CIPSERVER=0\r\n";
 
     while(ESPStartUp == false)
     {
         UART_Write(commands[count]);
         __delay_cycles(24000);
-        if(UARTA2Receive == true)
+
+        while((UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K') && UARTA2Data[UARTA2ReceiveIndex-7] != 'E');
+
+        if(UARTA2Data[UARTA2ReceiveIndex-4] == 'O' && UARTA2Data[UARTA2ReceiveIndex-3] == 'K')
+        {
+            count++;
+            if(count == 9) ESPStartUp = true;
+        }
+        else
+        {
+            if(count == 5) count++;
+        }
+
+        while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
+
+        /*if(UARTA2Receive == true)
         {
             while((UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K') && UARTA2Data[UARTA2ReceiveIndex-7] != 'E');
 
@@ -99,11 +117,55 @@ void esp8266StartUp(void)
                 count++;
                 if(count == 5) ESPStartUp = true;
             }
-        }
+        }*/
     }
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
     MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
+}
+
+void ESP8266Terminal(void)
+{
+    uint16_t index;
+    uint8_t ID;
+    while(1)
+    {
+        if(instructionFlag == true)
+        {
+            __delay_cycles(240000);
+            if(UARTA2Receive == true && ESPStartUp == true && instructionFlag == true)
+            {
+                ID = ESP8266Data[5];
+                index = 0;
+                while(index < ESP8266DataIndex)
+                {
+                    if(ESP8266Data[index] == 'P' && ESP8266Data[index+1] == 'O' && ESP8266Data[index+2] == 'S' && ESP8266Data[index+3] == 'T')
+                    {
+                        POST(ID);
+                        break;
+                    }
+                    else if(ESP8266Data[index] == 'G' && ESP8266Data[index+1] == 'E' && ESP8266Data[index+2] == 'T')
+                    {
+                        while(index < ESP8266DataIndex && ESP8266Data[index] != '=') index++;
+                        index++;
+                        GET(ID, ESP8266Data[index]);
+                        instructionFlag = false;
+                        break;
+                    }
+                    else index++;
+                }
+            }
+        }
+
+        if((getHCSR04Distance() < MIN_DISTANCE))
+        {
+            setDirection('s');
+            GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN0);
+            while((getHCSR04Distance() < MIN_DISTANCE));
+        }
+        else
+            GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);
+    }
 }
 
 void setToken(void)
@@ -118,7 +180,6 @@ void setToken(void)
         tokIndex++;
         ESP8266DataIndex++;
     }
-    //tokIndex--;
     ESP8266DataIndex = 0;
 }
 
@@ -143,24 +204,6 @@ void instruction(uint8_t ID)
         if(ESP8266Data[ESP8266DataIndex] == 'l') setDirection('l');
 
         parts++;
-
-        /*while(ESP8266Data[ESP8266DataIndex] != '&')
-        {
-            index++;
-            ESP8266DataIndex++;
-        }
-        ESP8266DataIndex--;
-
-        while(index != 0)
-        {
-            data[parts] += ((ESP8266Data[ESP8266DataIndex] - 48) * mult);
-            mult *= 10;
-            index--;
-            ESP8266DataIndex--;
-        }
-        mult = 1;
-        parts++;
-        ESP8266DataIndex++;*/
     }
 
     sendSuccess(ID);
@@ -265,50 +308,6 @@ void GET(uint8_t ID, uint8_t type)
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
 }
 
-void ESP8266Terminal(void)
-{
-    uint16_t index;
-    uint8_t ID;
-    while(1)
-    {
-        if(instructionFlag == true)
-        {
-            __delay_cycles(240000);
-            if(UARTA2Receive == true && ESPStartUp == true && instructionFlag == true)
-            {
-                ID = ESP8266Data[5];
-                index = 0;
-                while(index < ESP8266DataIndex)
-                {
-                    if(ESP8266Data[index] == 'P' && ESP8266Data[index+1] == 'O' && ESP8266Data[index+2] == 'S' && ESP8266Data[index+3] == 'T')
-                    {
-                        POST(ID);
-                        break;
-                    }
-                    else if(ESP8266Data[index] == 'G' && ESP8266Data[index+1] == 'E' && ESP8266Data[index+2] == 'T')
-                    {
-                        while(index < ESP8266DataIndex && ESP8266Data[index] != '=') index++;
-                        index++;
-                        GET(ID, ESP8266Data[index]);
-                        instructionFlag = false;
-                        break;
-                    }
-                    else index++;
-                }
-            }
-        }
-
-        if((getHCSR04Distance() < MIN_DISTANCE))
-        {
-            setDirection('s');
-            GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN0);
-            while((getHCSR04Distance() < MIN_DISTANCE));
-        }
-        else
-            GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);
-    }
-}
-
 void UART_Write(uint8_t *Data)
 {
     unsigned short i = 0;
@@ -366,18 +365,15 @@ void EUSCIA2_IRQHandler(void)
         if(c == '+' && instructionFlag != true)
         {
             instructionFlag = true;
-            UARTA2ReceiveIndex = 0;
+            while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
         }
-        else if(c == 10 && instructionFlag != true) UARTA2Receive = true;
+        //else if(c == 10 && instructionFlag != true) UARTA2Receive = true;
 
         UARTA2Data[UARTA2ReceiveIndex] = c;
         UARTA2ReceiveIndex++;
 
         if(instructionFlag == true)
         {
-            //if(c == '+') UARTA2ReceiveIndex = 0;
-            //UARTA2Data[UARTA2ReceiveIndex] = c;
-            //UARTA2ReceiveIndex++;
             if((c == '3' && UARTA2Data[UARTA2ReceiveIndex-2] == '2' && UARTA2Data[UARTA2ReceiveIndex-3] == '%') || (UARTA2Data[UARTA2ReceiveIndex-1] == '\n' && UARTA2Data[UARTA2ReceiveIndex-2] == '\r' && UARTA2Data[UARTA2ReceiveIndex-3] == '\n' && UARTA2Data[UARTA2ReceiveIndex-4] == '\r' && UARTA2Data[UARTA2ReceiveIndex-5] == 'e'))
             {
                 ESP8266DataIndex = UARTA2ReceiveIndex;
@@ -395,7 +391,7 @@ void EUSCIA2_IRQHandler(void)
                 ESP8266DataIndex++;
                 UARTA2Receive = true;
             }
-            else UARTA2Receive = false;
+            //else UARTA2Receive = false;
         }
 
         MAP_UART_transmitData(EUSCI_A0_BASE, c);
@@ -431,14 +427,7 @@ void EUSCIA2_IRQHandler(void)
             if(UARTA2Data[index] == 'A') MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN0);
             else if(UARTA2Data[index] == 'a') MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);
 
-            if(UARTA2Data[index] == 'l') setDirection('l');
-
-            if(UARTA2Data[index] == 'C') setDirection('r');
-
-            if(UARTA2Data[index] == 'D') setDirection('f');
-            else if(UARTA2Data[index] == 'd') setDirection('b');
-
-            if(UARTA2Data[index] == 'E') setDirection('s');
+            setDirection(UARTA2Data[index]);
         }
     }
 }
