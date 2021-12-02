@@ -54,7 +54,7 @@ void UARTStartUp(void)
 
 void esp8266StartUp(void)
 {
-    unsigned short count = 0;
+    unsigned short count = 0, retries;
     uint8_t *commands[9];
     commands[0] ="AT\r\n";
     commands[1] = "ATE0\r\n";
@@ -68,10 +68,16 @@ void esp8266StartUp(void)
 
     while(ESPStartUp == false)
     {
+        retries = 10;
+
         UART_Write(commands[count]);
         __delay_cycles(24000);
 
-        while((UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K') && UARTA2Data[UARTA2ReceiveIndex-7] != 'E');
+        while((UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K') && UARTA2Data[UARTA2ReceiveIndex-7] != 'E')
+        {
+            __delay_cycles(24000);
+            if(--retries == 0) break;
+        }
 
         if(UARTA2Data[UARTA2ReceiveIndex-4] == 'O' && UARTA2Data[UARTA2ReceiveIndex-3] == 'K')
         {
@@ -171,6 +177,7 @@ void GET(uint8_t type)
     UART_Write("AT+CIPSENDEX=0,39\r\n");
     __delay_cycles(24000);
     while(UARTA2Data[UARTA2ReceiveIndex-2] != '>' || UARTA2Data[UARTA2ReceiveIndex-1] != ' ');
+    //while(UARTA2Data[UARTA2ReceiveIndex-1] != '>');
 
     UART_Write(header);
     __delay_cycles(24000);
@@ -221,13 +228,27 @@ void instruction(void)
 
 void sendSuccess(uint8_t ID)
 {
+    unsigned short retries = 0;
     bool sendFlag = false;
 
     index = 0;
 
+    /*while(UARTA2Data[UARTA2ReceiveIndex-1] != '>')
+    {
+        UART_Write("AT+CIPSENDEX=0,15\r\n");
+        while(retries > 0 && UARTA2Data[UARTA2ReceiveIndex-1] != '>')
+        {
+            __delay_cycles(24000);
+            retries--;
+        }
+        if(retries == 0) retries = 10;
+    }*/
+
+
     UART_Write("AT+CIPSENDEX=0,15\r\n");
     __delay_cycles(24000);
     while(UARTA2Data[UARTA2ReceiveIndex-2] != '>' || UARTA2Data[UARTA2ReceiveIndex-1] != ' ');
+    //while(UARTA2Data[UARTA2ReceiveIndex-1] != '>');
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
 
     UART_Write("HTTP/1.1 200 OK\\0");
@@ -322,7 +343,7 @@ void EUSCIA2_IRQHandler(void)
 
         MAP_UART_transmitData(EUSCI_A0_BASE, c);
     }
-    if(UARTA2Data[UARTA2ReceiveIndex-9] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'T')
+    if(UARTA2Data[UARTA2ReceiveIndex-9] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'T' && UARTA2Data[UARTA2ReceiveIndex-2] == '\r')
     {
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);
         MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN2);

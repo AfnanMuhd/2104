@@ -22,7 +22,6 @@ void main()
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN1);
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN2);
 
-    MotorSetup();
     HCSR04Setup();
     UARTStartUp();
 
@@ -32,6 +31,7 @@ void main()
     MAP_Interrupt_enableMaster();
 
     esp8266StartUp();
+    MotorSetup();
 
     ESP8266Terminal();
 }
