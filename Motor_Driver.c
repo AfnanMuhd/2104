@@ -46,27 +46,29 @@ void MotorSetup(void)
 void SetRightDirection(void)
 {
     /*left motor*/
-    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN4);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
-    pwmConfig.dutyCycle = 30000;
+    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN5);
+    pwmConfig.dutyCycle = 9000;
 
     /*right motor*/
-    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN7);
     pwmConfig2.dutyCycle = 0;
+
 
 }
 void SetLeftDirection(void)
 {
     /*left motor*/
     GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN4);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN5);
     pwmConfig.dutyCycle = 0;
 
     /*right motor*/
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN7);
-    pwmConfig2.dutyCycle = 30000;
+    pwmConfig2.dutyCycle = 9000;
+
 
 }
 
@@ -123,12 +125,12 @@ void setDirection(char dir)
     state = dir;
     switch(dir)
     {
-        case 'l':   SetRightDirection();
+        case 'l':   SetLeftDirection();
                     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
                     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
                     break;
 
-        case 'r':   SetLeftDirection();
+        case 'r':   SetRightDirection();
                     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
                     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
                     break;

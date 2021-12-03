@@ -13,6 +13,7 @@ C_SRCS += \
 ../HCSR04.c \
 ../Motor_Driver.c \
 ../PID.c \
+../line.c \
 ../main.c \
 ../system_msp432p401r.c 
 
@@ -21,6 +22,7 @@ C_DEPS += \
 ./HCSR04.d \
 ./Motor_Driver.d \
 ./PID.d \
+./line.d \
 ./main.d \
 ./system_msp432p401r.d 
 
@@ -29,6 +31,7 @@ OBJS += \
 ./HCSR04.obj \
 ./Motor_Driver.obj \
 ./PID.obj \
+./line.obj \
 ./main.obj \
 ./system_msp432p401r.obj 
 
@@ -37,6 +40,7 @@ OBJS__QUOTED += \
 "HCSR04.obj" \
 "Motor_Driver.obj" \
 "PID.obj" \
+"line.obj" \
 "main.obj" \
 "system_msp432p401r.obj" 
 
@@ -45,6 +49,7 @@ C_DEPS__QUOTED += \
 "HCSR04.d" \
 "Motor_Driver.d" \
 "PID.d" \
+"line.d" \
 "main.d" \
 "system_msp432p401r.d" 
 
@@ -53,6 +58,7 @@ C_SRCS__QUOTED += \
 "../HCSR04.c" \
 "../Motor_Driver.c" \
 "../PID.c" \
+"../line.c" \
 "../main.c" \
 "../system_msp432p401r.c" 
 

@@ -1,12 +1,13 @@
 #include "ESP8266_UART.h"
 #include "Motor_Driver.h"
 #include "HCSR04.h"
+extern char lineDir;
 
 volatile uint8_t UARTA2Data[UARTA2_BUFFERSIZE], ESP8266Data[ESP8266_BUFFER_SIZE], ESP8266ReceiveData[ESP8266_BUFFER_SIZE], instruction_coms[3] = { NULL }, Token[50] = { NULL };
 volatile uint32_t UARTA2ReadIndex, UARTA2ReceiveIndex = 0, index = 0, ESP8266DataIndex = 0, tokIndex = 0;
 volatile bool UARTA2Receive = false, ESPStartUp = false, connFlag = false;
 
-volatile uint8_t UARTA0Data[UARTA2_BUFFERSIZE], dir = 'NULL';
+volatile uint8_t UARTA0Data[UARTA2_BUFFERSIZE], dir = 'f';
 volatile uint32_t UARTA0ReadIndex, UARTA0ReceiveIndex = 0;
 volatile bool UARTA0Receive = false, instructionFlag = false;
 
@@ -128,13 +129,19 @@ void ESP8266Terminal(void)
                 instructionFlag = false;
             }
         }
-        if((getHCSR04Distance() < MIN_DISTANCE))
+        /*if((getHCSR04Distance() < MIN_DISTANCE))
         {
             setDirection('s');
             GPIO_setOutputHighOnPin(GPIO_PORT_P1, GPIO_PIN0);
             while((getHCSR04Distance() < MIN_DISTANCE));
         }
-        else GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);
+        else GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);*/
+
+        if(lineDir != '0' && dir == 'f')
+        {
+            setDirection(lineDir);
+            lineDir = '0';
+        }
     }
 }
 
