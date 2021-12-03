@@ -1,76 +1,41 @@
-/*******************************************************************************
- * MSP432 Timer_A - Continuous Overflow Interrupt
- *
- *  Description: Toggle P1.0 using software and the Timer0_A overflow ISR.
- *  In this example an ISR triggers when TA overflows. Inside the ISR P1.0
- *  is toggled. Toggle rate is exactly 0.5Hz. (2 second period)
- *
- *  ACLK = TACLK = 32768Hz, MCLK = SMCLK = DCO = 3MHz
- *
- *                MSP432P401
- *             ------------------
- *         /|\|                  |
- *          | |                  |
- *          --|RST         P1.0  |---> P1.0 LED
- *            |                  |
- *            |                  |
- *            |                  |
- *            |                  |
- ******************************************************************************/
-/* DriverLib Includes */
-#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
-
 /* Standard Includes */
-#include <stdint.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
-#define TICKPERIOD      46875
-void SetForwardDirection();
-void SetSpeeds();
-void slow();
-
+#include "PID.h"
 
 /* Statics */
-static volatile bool flipFlop;
-uint32_t notchesdetected;
-double rpm;
-uint32_t notchesdetected2;
-double rpm2;
-double diff;
-int pwmleft=0;
-int pwmright=0;
+uint16_t notchesdetected, notchesdetected2, timer_count = 0;
+
+bool syncflag = false;
 
 /* Statics */
-   /* Timer_A PWM Configuration Parameter */
-    //left
-   Timer_A_PWMConfig pwmConfig =
+   //Timer_A PWM Configuration Parameter
+   //left
+   /*Timer_A_PWMConfig pwmConfig_1 =
    {
-           TIMER_A_CLOCKSOURCE_SMCLK,
-           TIMER_A_CLOCKSOURCE_DIVIDER_24,
-           10000,
-           TIMER_A_CAPTURECOMPARE_REGISTER_1,
-           TIMER_A_OUTPUTMODE_RESET_SET,
-           3000
+       TIMER_A_CLOCKSOURCE_SMCLK,
+       TIMER_A_CLOCKSOURCE_DIVIDER_24,
+       10000,
+       TIMER_A_CAPTURECOMPARE_REGISTER_1,
+       TIMER_A_OUTPUTMODE_RESET_SET,
+       4000
    };
 
 
-   /* Timer_A PWM Configuration Parameter */
+   // Timer_A PWM Configuration Parameter
    //right
-   Timer_A_PWMConfig pwmConfig2 =
+   Timer_A_PWMConfig pwmConfig_2 =
    {
-           TIMER_A_CLOCKSOURCE_SMCLK,
-           TIMER_A_CLOCKSOURCE_DIVIDER_24,
-           10000,
-           TIMER_A_CAPTURECOMPARE_REGISTER_4,
-           TIMER_A_OUTPUTMODE_RESET_SET,
-           3000
-   };
+       TIMER_A_CLOCKSOURCE_SMCLK,
+       TIMER_A_CLOCKSOURCE_DIVIDER_24,
+       10000,
+       TIMER_A_CAPTURECOMPARE_REGISTER_4,
+       TIMER_A_OUTPUTMODE_RESET_SET,
+       4000
+   };*/
 
-void Initalise_timer(void)
+void Initalise_encoderTimer(void)
 {
     /* Timer_A UpMode Configuration Parameter */
-    const Timer_A_UpModeConfig upConfig =
+    const Timer_A_UpModeConfig encoderUpConfig =
     {
             TIMER_A_CLOCKSOURCE_SMCLK,              // SMCLK Clock Source
             TIMER_A_CLOCKSOURCE_DIVIDER_64,          // SMCLK/3 = 1MHz
@@ -82,10 +47,8 @@ void Initalise_timer(void)
 
     int a = CS_getSMCLK();
 
-
-
     /* Configuring Timer_A0 for Up Mode */
-    Timer_A_configureUpMode(TIMER_A2_BASE, &upConfig);
+    Timer_A_configureUpMode(TIMER_A2_BASE, &encoderUpConfig);
 
     /* Enabling interrupts and starting the timer */
     Interrupt_enableInterrupt(INT_TA2_0);
@@ -96,202 +59,91 @@ void Initalise_timer(void)
 
 }
 
-void WheelEncoderSetup()
+void WheelEncoderSetup(void)
 {
     //wheel encoder 1
-       GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P5, GPIO_PIN0);
-       GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
+    GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P5, GPIO_PIN0);
+    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
 
-       GPIO_clearInterruptFlag(GPIO_PORT_P5, GPIO_PIN0);
-       GPIO_enableInterrupt(GPIO_PORT_P5, GPIO_PIN0);
+    GPIO_clearInterruptFlag(GPIO_PORT_P5, GPIO_PIN0);
+    GPIO_enableInterrupt(GPIO_PORT_P5, GPIO_PIN0);
 
+    //wheel encoder 2
+    GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P5, GPIO_PIN2);
 
-       //wheel encoder 2
-       GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P5, GPIO_PIN2);
+    GPIO_clearInterruptFlag(GPIO_PORT_P5, GPIO_PIN2);
+    GPIO_enableInterrupt(GPIO_PORT_P5, GPIO_PIN2);
 
-       GPIO_clearInterruptFlag(GPIO_PORT_P5, GPIO_PIN2);
-       GPIO_enableInterrupt(GPIO_PORT_P5, GPIO_PIN2);
-
-       Interrupt_enableInterrupt(INT_PORT5);
-       Interrupt_enableMaster();
+    Interrupt_enableInterrupt(INT_PORT5);
+    //Interrupt_enableMaster();
 }
-void MotorSetup(){
-
-    /*left motor*/
-        /* Configuring P4.4 and P4.5 as Output. P2.4 as peripheral output for PWM and P1.1 for button interrupt */
-        GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN4);
-        GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN5);
-        GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
-
-        /*right motor*/
-        /* Configuring P4.0 and P4.2 as Output. P2.5 as peripheral output for PWM and P1.4 for button interrupt */
-        GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN5);
-        GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN7);
-        GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
-        Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
-        Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
-
-
-}
-
-int main(void)
+/*void MotorSetup1(void)
 {
-    /* Stop watchdog timer */
-    MAP_WDT_A_holdTimer();
-    Initalise_timer();
-    WheelEncoderSetup();
-    MotorSetup();
-    SetForwardDirection();
-    //SetSpeeds();
+    //left motor
+    // Configuring P4.4 and P4.5 as Output. P2.4 as peripheral output for PWM and P1.1 for button interrupt
+    GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN4);
+    GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN5);
+    GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
 
+    //right motor
+    // Configuring P4.0 and P4.2 as Output. P2.5 as peripheral output for PWM and P1.4 for button interrupt
+    GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN5);
+    GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN7);
+    GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
 
+    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_1);
+    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig_2);
 
-
-
-    while(1)
-    {
-        //MAP_PCM_gotoLPM0();
-    }
-
-}
+}*/
 
 //******************************************************************************
 //
 //This is the TIMER_A interrupt vector service routine.
 //
 //******************************************************************************
+
 void TA2_0_IRQHandler(void)
 {
+    if(timer_count != 6) timer_count++;
+    else
+    {
+        MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
+        if(syncflag == false)
+        {
+            syncflag = true;
+            SetSpeeds(notchesdetected, notchesdetected2);
+        }
 
-    MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);\
-    SetSpeeds();
+        notchesdetected=0;
+        notchesdetected2=0;
+        timer_count = 0;
+
+        /* Clear interrupt flag */
+        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    }
 
     //printf("First wheel:%2f ",rpm);
     //printf("Second wheel:%2f\n",rpm2);
-    printf("PWM Left:%d ",notchesdetected2);
-    printf("PWM Right:%d\n",notchesdetected);
-    notchesdetected=0;
-    rpm=0;
-    notchesdetected2=0;
-    rpm2=0;
 
-
-
-    /* Clear interrupt flag */
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-
+    //printf("PWM Left:%d ", notchesdetected);
+    //printf("PWM Right:%d\n", notchesdetected2);
 }
-
 
 /* GPIO ISR */
 void PORT5_IRQHandler(void)
 {
     uint32_t status;
     status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P5);
-    if(status & GPIO_PIN0){
+    if(status & GPIO_PIN0)
+    {
         notchesdetected++; //right
-        rpm = (double)notchesdetected*60.0/20.0;
+        //rpm = (double)notchesdetected*60.0/20.0;
     }
-    if(status & GPIO_PIN2){
+    if(status & GPIO_PIN2)
+    {
          notchesdetected2++; //left
-         rpm2 = (double)notchesdetected*60.0/20.0;
+         //rpm2 = (double)notchesdetected*60.0/20.0;
     }
 
     GPIO_clearInterruptFlag(GPIO_PORT_P5, status);
-}
-
-
-
-
-
-void SetForwardDirection(){
-    /*left motor*/
-    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN4);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
-
-
-    /*right motor*/
-    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
-    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN7);
-
-
-}
-void slow(){
-    /*left motor*/
-    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN4);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
-    pwmConfig.dutyCycle = 0;
-
-
-    /*right motor*/
-    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
-    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN7);
-    pwmConfig2.dutyCycle = 30000;
-
-}
-void SetLeftMotorSpeed(double speed){
-    //left config2
-    pwmConfig2.dutyCycle -= speed ;
-    pwmConfig.dutyCycle += speed ;
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
-}
-
-void SetRightMotorSpeed(double speed){
-    pwmConfig2.dutyCycle += speed ;
-    pwmConfig.dutyCycle -= speed ;
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
-    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
-}
-
-void SetSpeeds(){
-
-    pwmleft=pwmConfig.dutyCycle /  notchesdetected2;
-    pwmright=pwmConfig2.dutyCycle /  notchesdetected;
-    if(notchesdetected != notchesdetected2)
-    {
-    if(notchesdetected>notchesdetected2)
-    {
-        if(notchesdetected>notchesdetected2)//if left faster than right
-        {
-            diff = (notchesdetected - notchesdetected2)/2;
-            SetLeftMotorSpeed(pwmConfig.dutyCycle+(diff*pwmleft));
-            SetRightMotorSpeed(pwmConfig2.dutyCycle-(diff*pwmright));
-
-        }
-        /*else //if right faster than left
-        {
-            diff = (notchesdetected2 - notchesdetected)*10;
-            SetRightMotorSpeed(diff);
-        }
-        */
-    }
-    else
-    {
-        if(notchesdetected>notchesdetected2)//if left faster than right
-        {
-            diff = (notchesdetected - notchesdetected2)/2;
-            SetLeftMotorSpeed(pwmConfig.dutyCycle-(diff*pwmleft));
-            SetRightMotorSpeed(pwmConfig2.dutyCycle+(diff*pwmright));
-
-        }
-    }
-    }
-
-
-    /*
-        if (rpm != rpm2)
-        {
-            if(rpm>rpm2)//if left faster than right
-            {
-                diff = (rpm - rpm2)*10;
-                SetLeftMotorSpeed(diff);
-
-            }
-            else //if right faster than left
-            {
-                diff = (rpm2 - rpm)*10;
-                SetRightMotorSpeed(diff);
-            }
-        }*/
 }

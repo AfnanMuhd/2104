@@ -16,7 +16,7 @@ Timer_A_PWMConfig pwmConfig =
 Timer_A_PWMConfig pwmConfig2 =
 {
         TIMER_A_CLOCKSOURCE_SMCLK,
-        TIMER_A_CLOCKSOURCE_DIVIDER_24,
+        TIMER_A_CLOCKSOURCE_DIVIDER_64,
         30000,
         TIMER_A_CAPTURECOMPARE_REGISTER_4,
         TIMER_A_OUTPUTMODE_RESET_SET,
@@ -37,7 +37,7 @@ void MotorSetup(void)
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN7);
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
 
-    setDirection('f');
+    //setDirection('f');
 }
 
 void SetRightDirection(void)
@@ -145,4 +145,41 @@ void setDirection(char dir)
                     break;
     }
 
+}
+
+void SetMotorSpeed(double Lspeed, double Rspeed)
+{
+    pwmConfig.dutyCycle = Lspeed;
+    pwmConfig2.dutyCycle = Rspeed;
+    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
+    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
+}
+
+void SetSpeeds(uint16_t lNotch, uint16_t rNotch)
+{
+    uint16_t leftCycle = 0, rightCycle = 0, diff = 0, pwmleft = 0, pwmright = 0;
+    pwmleft = pwmConfig.dutyCycle /  lNotch;
+    pwmright = pwmConfig2.dutyCycle /  rNotch;
+
+    if(lNotch != rNotch)
+    {
+        if(lNotch > rNotch)
+        {
+            diff = (lNotch - rNotch) / 2;
+
+            leftCycle = pwmConfig.dutyCycle - (diff * pwmleft);
+            rightCycle = pwmConfig2.dutyCycle + (diff * pwmright);
+
+            SetMotorSpeed(leftCycle, rightCycle);
+        }
+        else
+        {
+            diff = (rNotch - lNotch) / 2;
+
+            leftCycle = pwmConfig.dutyCycle + (diff * pwmleft);
+            rightCycle = pwmConfig2.dutyCycle - (diff * pwmright);
+
+            SetMotorSpeed(leftCycle, rightCycle);
+        }
+    }
 }

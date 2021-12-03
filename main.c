@@ -1,5 +1,6 @@
 #include "ESP8266_UART.h"
 #include "Motor_Driver.h"
+#include "PID.h"
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <stdio.h>
 
@@ -25,6 +26,9 @@ void main()
     HCSR04Setup();
     UARTStartUp();
 
+    Initalise_encoderTimer();
+    WheelEncoderSetup();
+
     /*Reset GPIO of the ESP8266*/
     GPIO_setAsOutputPin(GPIO_PORT_P6, GPIO_PIN1);
 
@@ -34,4 +38,6 @@ void main()
     MotorSetup();
 
     ESP8266Terminal();
+
+    while(1);
 }

@@ -58,6 +58,11 @@ main.obj: D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/
 main.obj: D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/sysctl.h
 main.obj: D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/flash.h
 main.obj: ../Motor_Driver.h
+main.obj: ../PID.h
+main.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/math.h
+main.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/_defs.h
+main.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_limits.h
+main.obj: ../Motor_Driver.h
 
 ../main.c:
 
@@ -172,6 +177,16 @@ D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/
 D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/sysctl.h:
 
 D:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/flash.h:
+
+../Motor_Driver.h:
+
+../PID.h:
+
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/math.h:
+
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/_defs.h:
+
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_limits.h:
 
 ../Motor_Driver.h:
 
