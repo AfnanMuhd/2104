@@ -4,7 +4,7 @@
 /* Statics */
 uint16_t notchesdetected, notchesdetected2, timer_count = 0;
 
-bool syncflag = false;
+bool syncflag = false, speedflag = false;
 extern uint8_t state;
 
 /* Statics */
@@ -113,10 +113,12 @@ void TA2_0_IRQHandler(void)
         if(syncflag == false && state != 's')
         {
             syncflag = true;
+            speedflag = false;
             SetSpeeds(notchesdetected, notchesdetected2);
         }
-        else if(syncflag == true)
+        else if(syncflag == true && speedflag == false)
         {
+            speedflag = true;
             if((notchesdetected<19 || notchesdetected>21) && (notchesdetected2<19 || notchesdetected2>21))
                 SetBaseSpeed(notchesdetected, notchesdetected2);
         }

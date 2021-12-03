@@ -1,6 +1,8 @@
 #include "Motor_Driver.h"
 uint8_t state='s';
 
+extern bool syncflag;
+
 /* Timer_A PWM Configuration Parameter */
 Timer_A_PWMConfig pwmConfig =
 {
@@ -142,6 +144,7 @@ void setDirection(char dir)
                     break;
 
         case 's':   SetStop();
+                    syncflag = false;
                     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
                     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
                     break;
