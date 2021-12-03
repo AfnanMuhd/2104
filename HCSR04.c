@@ -3,6 +3,8 @@
 
 volatile uint32_t SR04IntTimes;
 
+extern volatile bool instructionFlag;
+
 void HCSR04Setup(void)
 {
     /* Timer_A UpMode Configuration Parameter */
@@ -39,7 +41,7 @@ void HCSR04Setup(void)
 
 float getHCSR04Distance(void)
 {
-    uint32_t pulsetime=0;
+    uint32_t pulsetime=0, tries = 0;
     float calculateddistance = 0;
 
     /* Generate 10us pulse at P3.6 */
@@ -48,15 +50,24 @@ float getHCSR04Distance(void)
     GPIO_setOutputLowOnPin(GPIO_PORT_P3, GPIO_PIN6);
 
     /* Wait for positive-edge */
-    while(GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN7) == 0);
+    while(GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN7) == 0 && instructionFlag != true)
+    {
+        if(tries > 279900) break;
+        tries++;
+    }
 
     /* Start Timer */
     SR04IntTimes = 0;
     Timer_A_clearTimer(TIMER_A1_BASE);
     Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
 
+    tries = 0;
     /* Detects negative-edge */
-    while(GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN7) == 1);
+    while(GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN7) == 1 && instructionFlag != true)
+    {
+        if(tries > 279900) break;
+        tries++;
+    }
 
     /* Stop Timer */
     Timer_A_stopTimer(TIMER_A1_BASE);
@@ -75,6 +86,11 @@ float getHCSR04Distance(void)
 
     /* Calculating distance in cm */
     calculateddistance = (float)pulsetime / 58.0f;
+
+    if(instructionFlag == true || tries > 279900)
+    {
+        calculateddistance = MIN_DISTANCE + 1;
+    }
 
     return calculateddistance;
 }

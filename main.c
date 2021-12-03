@@ -25,8 +25,8 @@ void main()
 
     HCSR04Setup();
     UARTStartUp();
+    MotorSetup();
 
-    Initalise_encoderTimer();
     WheelEncoderSetup();
 
     /*Reset GPIO of the ESP8266*/
@@ -35,7 +35,8 @@ void main()
     MAP_Interrupt_enableMaster();
 
     esp8266StartUp();
-    MotorSetup();
+    Initalise_encoderTimer();
+
 
     ESP8266Terminal();
 

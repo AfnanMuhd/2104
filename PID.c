@@ -5,6 +5,7 @@
 uint16_t notchesdetected, notchesdetected2, timer_count = 0;
 
 bool syncflag = false;
+extern uint8_t state;
 
 /* Statics */
    //Timer_A PWM Configuration Parameter
@@ -39,7 +40,7 @@ void Initalise_encoderTimer(void)
     {
             TIMER_A_CLOCKSOURCE_SMCLK,              // SMCLK Clock Source
             TIMER_A_CLOCKSOURCE_DIVIDER_64,          // SMCLK/3 = 1MHz
-            TICKPERIOD,                             // 1000 tick period
+            TICKPERIOD2,                             // 1000 tick period
             TIMER_A_TAIE_INTERRUPT_DISABLE,         // Disable Timer interrupt
             TIMER_A_CCIE_CCR0_INTERRUPT_ENABLE ,    // Enable CCR0 interrupt
             TIMER_A_DO_CLEAR                        // Clear value
@@ -52,10 +53,11 @@ void Initalise_encoderTimer(void)
 
     /* Enabling interrupts and starting the timer */
     Interrupt_enableInterrupt(INT_TA2_0);
+    Timer_A_clearTimer(TIMER_A2_BASE);
     Timer_A_startCounter(TIMER_A2_BASE, TIMER_A_UP_MODE);
 
     //Timer_A_stopTimer(TIMER_A0_BASE);
-    Timer_A_clearTimer(TIMER_A2_BASE);
+    //Timer_A_clearTimer(TIMER_A2_BASE);
 
 }
 
@@ -63,7 +65,7 @@ void WheelEncoderSetup(void)
 {
     //wheel encoder 1
     GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P5, GPIO_PIN0);
-    GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0);
+    GPIO_setAsOutputPin(GPIO_PORT_P2, GPIO_PIN0);
 
     GPIO_clearInterruptFlag(GPIO_PORT_P5, GPIO_PIN0);
     GPIO_enableInterrupt(GPIO_PORT_P5, GPIO_PIN0);
@@ -107,21 +109,27 @@ void TA2_0_IRQHandler(void)
     if(timer_count != 6) timer_count++;
     else
     {
-        MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P1, GPIO_PIN0);
-        if(syncflag == false)
+        MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P2, GPIO_PIN0);
+        if(syncflag == false && state != 's')
         {
             syncflag = true;
             SetSpeeds(notchesdetected, notchesdetected2);
         }
-
+        else if(syncflag == true)
+        {
+            if((notchesdetected<19 || notchesdetected>21) && (notchesdetected2<19 || notchesdetected2>21))
+                SetBaseSpeed(notchesdetected, notchesdetected2);
+        }
+        //printf("PWM Left:%d ", notchesdetected);
+        //printf("PWM Right:%d\n", notchesdetected2);
         notchesdetected=0;
         notchesdetected2=0;
         timer_count = 0;
 
-        /* Clear interrupt flag */
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-    }
 
+    }
+    /* Clear interrupt flag */
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
     //printf("First wheel:%2f ",rpm);
     //printf("Second wheel:%2f\n",rpm2);
 

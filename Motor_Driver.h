@@ -9,3 +9,4 @@ void SetForwardDirection(void);
 void setDirection(char);
 void SetSpeeds(uint16_t lNotch, uint16_t rNotch);
 void SetMotorSpeed(double Lspeed, double Rspeed);
+void SetBaseSpeed(uint16_t lNotch, uint16_t rNotch);

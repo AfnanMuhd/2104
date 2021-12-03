@@ -253,7 +253,8 @@ void sendSuccess(uint8_t ID)
 
     UART_Write("HTTP/1.1 200 OK\\0");
     __delay_cycles(24000);
-    while(UARTA2Data[UARTA2ReceiveIndex-9] != 'S' || UARTA2Data[UARTA2ReceiveIndex-8] != 'E' || UARTA2Data[UARTA2ReceiveIndex-7] != 'N' || UARTA2Data[UARTA2ReceiveIndex-6] != 'D' || UARTA2Data[UARTA2ReceiveIndex-5] != ' ' || UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K');
+    //while(UARTA2Data[UARTA2ReceiveIndex-14] != 'S' || UARTA2Data[UARTA2ReceiveIndex-8] != 'E' || UARTA2Data[UARTA2ReceiveIndex-7] != 'N' || UARTA2Data[UARTA2ReceiveIndex-6] != 'D' || UARTA2Data[UARTA2ReceiveIndex-5] != ' ' || UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K');
+    while(UARTA2Data[UARTA2ReceiveIndex-15] != 'R' || UARTA2Data[UARTA2ReceiveIndex-14] != 'e' || UARTA2Data[UARTA2ReceiveIndex-13] != 'c' || UARTA2Data[UARTA2ReceiveIndex-12] != 'v');
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
 }
 

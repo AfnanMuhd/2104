@@ -1,4 +1,5 @@
 #include "Motor_Driver.h"
+uint8_t state='s';
 
 /* Timer_A PWM Configuration Parameter */
 Timer_A_PWMConfig pwmConfig =
@@ -70,15 +71,15 @@ void SetLeftDirection(void)
 void SetForwardDirection(void)
 {
     /*left motor*/
-    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN4);
-    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN5);
-    pwmConfig.dutyCycle = 30000;
+    GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN5);
+    pwmConfig.dutyCycle = 9000;
 
 
     /*right motor*/
-    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
-    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN7);
-    pwmConfig2.dutyCycle = 30000;
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN7);
+    pwmConfig2.dutyCycle = 9000;
 
 
 }
@@ -117,6 +118,7 @@ void SetReverseDirection(void)
 
 void setDirection(char dir)
 {
+    state = dir;
     switch(dir)
     {
         case 'l':   SetRightDirection();
@@ -182,4 +184,16 @@ void SetSpeeds(uint16_t lNotch, uint16_t rNotch)
             SetMotorSpeed(leftCycle, rightCycle);
         }
     }
+}
+
+void SetBaseSpeed(uint16_t lNotch, uint16_t rNotch)
+{
+    uint16_t leftCycle = 0, rightCycle = 0, pwmleft = 0, pwmright = 0;
+    pwmleft = pwmConfig.dutyCycle /  lNotch;
+    pwmright = pwmConfig2.dutyCycle /  rNotch;
+    leftCycle = 20 * pwmleft;
+    rightCycle = 20 * pwmright;
+    SetMotorSpeed(leftCycle, rightCycle);
+
+
 }
