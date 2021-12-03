@@ -110,7 +110,7 @@ void TA2_0_IRQHandler(void)
     else
     {
         MAP_GPIO_toggleOutputOnPin(GPIO_PORT_P2, GPIO_PIN0);
-        if(syncflag == false && state != 's')
+        if(syncflag == false && state == 'f')
         {
             syncflag = true;
             speedflag = false;
