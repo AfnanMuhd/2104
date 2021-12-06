@@ -34,9 +34,10 @@ void main()
     /*Motor driver setup*/
     MotorSetup();
 
+
     /*IR Optical speed sensor setup*/
-    Initalise_encoderTimer();
     WheelEncoderSetup();
+    Initalise_encoderTimer();
 
     //IRSensorSetup();
 

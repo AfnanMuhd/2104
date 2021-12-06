@@ -2,23 +2,23 @@
 
 ESP8266_UART.obj: ../ESP8266_UART.c
 ESP8266_UART.obj: ../ESP8266_UART.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdio.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/linkage.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdarg.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/string.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdlib.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdio.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/linkage.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdarg.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/string.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdlib.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
 ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/driverlib.h
 ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/adc14.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdint.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h
-ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdint.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h
+ESP8266_UART.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h
 ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp.h
 ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp432p401r.h
 ESP8266_UART.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp_compatibility.h
@@ -64,39 +64,39 @@ ESP8266_UART.obj: ../HCSR04.h
 
 ../ESP8266_UART.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdio.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdio.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/linkage.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/linkage.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdarg.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdarg.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/string.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/string.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdlib.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdlib.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdbool.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdbool.h:
 
 C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/driverlib.h:
 
 C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/adc14.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h:
 
 C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp.h:
 

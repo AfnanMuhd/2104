@@ -36,13 +36,13 @@ Timer_A_PWMConfig pwmConfig2 =
 void MotorSetup(void)
 {
     /*left motor*/
-    /* Configuring P4.4 and P4.5 as Output. P2.4 as peripheral output for PWM and P1.1 for button interrupt */
+    /* Configuring P5.4 and P5.5 as Output. P2.4 as peripheral output for PWM */
     GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN4);
     GPIO_setAsOutputPin(GPIO_PORT_P5, GPIO_PIN5);
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
 
     /*right motor*/
-    /* Configuring P4.0 and P4.2 as Output. P2.5 as peripheral output for PWM and P1.4 for button interrupt */
+    /* Configuring P4.5 and P4.7 as Output. P2.7 as peripheral output for PWM */
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN7);
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN7, GPIO_PRIMARY_MODULE_FUNCTION);
@@ -59,7 +59,6 @@ void SetRightDirection(void)
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN7);
     pwmConfig2.dutyCycle = 3000;
-
 
 }
 
@@ -160,9 +159,6 @@ void SetReverseDirection(void)
 void setDirection(char dir)
 {
     state = dir;
-    if(runFlag == false || dir == 's')
-    {
-        if(runFlag == false) runFlag = true;
         switch(dir)
         {
             case 'l':   if(isnFlag == true) SetTurnLeftDirection();
@@ -194,7 +190,6 @@ void setDirection(char dir)
                         Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
                         break;
         }
-    }
 }
 
 /*Function to set the motor speed*/
@@ -222,7 +217,6 @@ void SetBaseSpeed(uint16_t lNotch, uint16_t rNotch)
         {
             diff = (lNotch - rNotch) / 2;
             notches = lNotch - diff;
-
             leftCycle = pwmConfig.dutyCycle - (diff * pwmleft);
             rightCycle = pwmConfig2.dutyCycle + (diff * pwmright);
         }
@@ -230,15 +224,13 @@ void SetBaseSpeed(uint16_t lNotch, uint16_t rNotch)
         {
             diff = (rNotch - lNotch) / 2;
             notches = rNotch - diff;
-
-
             leftCycle = pwmConfig.dutyCycle + (diff * pwmleft);
             rightCycle = pwmConfig2.dutyCycle - (diff * pwmright);
         }
+        /*Calculates the pwm duty cycle such that both motors runs at 20 notches per second, then set the motor speed*/
+        forwardPWM_Left = 20 * (leftCycle / notches);
+        forwardPWM_Right = 20 * (rightCycle / notches);
+        SetMotorSpeed(forwardPWM_Left, forwardPWM_Right);
     }
 
-    /*Calculates the pwm duty cycle such that both motors runs at 20 notches per second, then set the motor speed*/
-    forwardPWM_Left = 20 * (leftCycle / notches);
-    forwardPWM_Right = 20 * (rightCycle / notches);
-    SetMotorSpeed(forwardPWM_Left, forwardPWM_Right);
 }

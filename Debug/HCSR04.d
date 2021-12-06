@@ -4,17 +4,17 @@ HCSR04.obj: ../HCSR04.c
 HCSR04.obj: ../HCSR04.h
 HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/driverlib.h
 HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/adc14.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdint.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/linkage.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h
-HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdint.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/linkage.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h
+HCSR04.obj: C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
 HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp.h
 HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp432p401r.h
 HCSR04.obj: C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp_compatibility.h
@@ -63,27 +63,27 @@ C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/
 
 C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/driverlib/adc14.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/_ti_config.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/linkage.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/linkage.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/_stdint40.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/cdefs.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_types.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_types.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/machine/_stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h:
 
-C:/ti/simplelink_msp432p4_sdk_3_40_01_02/ti-cgt-arm_20.2.4.LTS/include/stdbool.h:
+C:/ti/ti-cgt-arm_20.2.4.LTS/include/stdbool.h:
 
 C:/ti/simplelink_msp432p4_sdk_3_40_01_02/source/ti/devices/msp432p4xx/inc/msp.h:
 

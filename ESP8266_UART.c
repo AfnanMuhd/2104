@@ -151,6 +151,7 @@ void ESP8266Terminal(void)
         }
         else GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0);
 
+        //Not integrated with the other components.
         /*readLine();
         if(senstat != lineDir && isnFlag == false)
         {
