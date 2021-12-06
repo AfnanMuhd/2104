@@ -14,19 +14,7 @@ volatile bool UARTA0Receive = false, instructionFlag = false;
 
 void UARTStartUp(void)
 {
-    eUSCI_UART_ConfigV1 UART0Config =
-    {
-         EUSCI_A_UART_CLOCKSOURCE_SMCLK,
-         13,
-         0,
-         37,
-         EUSCI_A_UART_NO_PARITY,
-         EUSCI_A_UART_LSB_FIRST,
-         EUSCI_A_UART_ONE_STOP_BIT,
-         EUSCI_A_UART_MODE,
-         EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
-    };
-
+    /*UART configuration for ESP8266*/
     eUSCI_UART_ConfigV1 UART2Config =
     {
          EUSCI_A_UART_CLOCKSOURCE_SMCLK,
@@ -40,12 +28,6 @@ void UARTStartUp(void)
          EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
     };
 
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P1, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
-    MAP_UART_initModule(EUSCI_A0_BASE, &UART0Config);
-    MAP_UART_enableModule(EUSCI_A0_BASE);
-    MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
-    MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
-
     /*Initialize required hardware peripherals for the ESP8266*/
     MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P3, GPIO_PIN2 | GPIO_PIN3, GPIO_PRIMARY_MODULE_FUNCTION);
     MAP_UART_initModule(EUSCI_A2_BASE, &UART2Config);
@@ -54,10 +36,13 @@ void UARTStartUp(void)
     MAP_Interrupt_enableInterrupt(INT_EUSCIA2);
 }
 
+/*Function for setting up the ESP8266 WiFi module*/
 void esp8266StartUp(void)
 {
     unsigned short count = 0, retries;
     uint8_t *commands[9];
+
+    /*Commands to test and set up ESP8266*/
     commands[0] ="AT\r\n";
     commands[1] = "ATE0\r\n";
     commands[2] ="AT+CWMODE=2\r\n";
@@ -68,10 +53,12 @@ void esp8266StartUp(void)
     commands[7] ="AT+CIPSERVER=1,80\r\n";
     commands[8] ="AT+CIPSTO=1\r\n";
 
+    /*While loop to ensure that the ESP8266 successfully start up*/
     while(ESPStartUp == false)
     {
         retries = 10;
 
+        /*function call to send the commands to ESP8266 via UART*/
         UART_Write(commands[count]);
         __delay_cycles(24000);
 
@@ -93,24 +80,27 @@ void esp8266StartUp(void)
 
         while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
     }
+
+    /*Clear the UART2Data array and output the appropriate LED after successful set up*/
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN0);
     MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN2);
 }
 
+/*Function for running the robotic car after successful set up of ESP8266*/
 void ESP8266Terminal(void)
 {
     uint16_t index;
-    uint8_t ID;
 
+    /*Infinite while loop that contains codes for running the robotic car*/
     while(1)
     {
+        /*if statement for parsing POST and GET requests from received data*/
         if(instructionFlag == true)
         {
             __delay_cycles(240000);
             if(UARTA2Receive == true && ESPStartUp == true && instructionFlag == true)
             {
-                ID = ESP8266Data[5];
                 index = 0;
                 while(index < ESP8266DataIndex)
                 {
@@ -131,6 +121,8 @@ void ESP8266Terminal(void)
             }
             instructionFlag = false;
         }
+
+        /*if statement to run instructions received*/
         if(part_cnt != 0)
         {
             if(iIndex != instruct_index)
@@ -149,6 +141,8 @@ void ESP8266Terminal(void)
                 setDirection(data[iIndex]);
             }
         }
+
+        /*if statement to stop the robotic car movement using the ultrasonic sensor*/
         if((getHCSR04Distance() < MIN_DISTANCE))
         {
             setDirection('s');
@@ -166,6 +160,7 @@ void ESP8266Terminal(void)
     }
 }
 
+/*This function is for determining the validity and type of data received via POST method*/
 void POST(void)
 {
     uint16_t postIndex = ESP8266DataIndex;
@@ -173,25 +168,32 @@ void POST(void)
     {
         while(ESP8266Data[ESP8266DataIndex-3] != 'I' || ESP8266Data[ESP8266DataIndex-2] != 'S' || ESP8266Data[ESP8266DataIndex-1] != 'N' || ESP8266Data[ESP8266DataIndex] != '=') ESP8266DataIndex--;
 
+        /*if a 0 is received, signifies a set token instruction*/
         if(ESP8266Data[ESP8266DataIndex+1] == '0' && ESP8266Data[ESP8266DataIndex+2] == '&')
         {
             ESP8266DataIndex++;
             setToken();
         }
+
+        /*if a 1 is received, signifies a motion instruction*/
         else if(ESP8266Data[ESP8266DataIndex+1] == '1' && ESP8266Data[ESP8266DataIndex+2] == '&')
         {
             ESP8266DataIndex = postIndex;
             instruction();
         }
+
+        /*Sends a success message back to the robotic car once the data has been parsed*/
         sendSuccess();
     }
 }
 
+/*This function is for processing a GET request*/
 void GET(uint8_t type)
 {
-    uint16_t getIndex = 0, get_retries = 0;
+    uint16_t getIndex = 0;
     char header[ESP8266_BUFFER_SIZE];
 
+    /* Crafting message to be send*/
     strcpy(header,  "HTTP/1.1 200 OK\n\n");
 
     index = 17;
@@ -203,9 +205,9 @@ void GET(uint8_t type)
 
     index = 0;
 
+    /*Command to initialize data transmission*/
     UART_Write("AT+CIPSENDEX=0,39\r\n");
     __delay_cycles(2400000);
-    //while(UARTA2Data[UARTA2ReceiveIndex-2] != '>' || UARTA2Data[UARTA2ReceiveIndex-1] != ' ');
     while(UARTA2Data[UARTA2ReceiveIndex-1] != '>')
     {
         UART_Write("AT+CIPSENDEX=0,39\r\n");
@@ -213,9 +215,9 @@ void GET(uint8_t type)
         getIndex = UARTA2ReceiveIndex;
     }
 
+    /*Sending message crafted above*/
     UART_Write(header);
     __delay_cycles(24000);
-    //while(UARTA2Data[UARTA2ReceiveIndex-9] != 'S' || UARTA2Data[UARTA2ReceiveIndex-8] != 'E' || UARTA2Data[UARTA2ReceiveIndex-7] != 'N' || UARTA2Data[UARTA2ReceiveIndex-6] != 'D' || UARTA2Data[UARTA2ReceiveIndex-5] != ' ' || UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K');
     getIndex = UARTA2ReceiveIndex;
     while(UARTA2Data[getIndex-3] != 'R' || UARTA2Data[getIndex-2] != 'e' || UARTA2Data[getIndex-1] != 'c' || UARTA2Data[getIndex] != 'v' )
     {
@@ -228,15 +230,20 @@ void GET(uint8_t type)
         }
     }
 
+    /*Clear the UART2Data array after successful transmission*/
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
 }
 
+/*Function to set token from received data*/
 void setToken(void)
 {
+    /*Traverse to the character '=' in the received data*/
     while(ESP8266Data[ESP8266DataIndex] != '=') ESP8266DataIndex++;
     ESP8266DataIndex++;
 
     tokIndex = 0;
+
+    /*Store all characters till the '&' character as the token*/
     while(ESP8266Data[ESP8266DataIndex] != '&')
     {
         Token[tokIndex] = ESP8266Data[ESP8266DataIndex];
@@ -246,6 +253,7 @@ void setToken(void)
     ESP8266DataIndex = 0;
 }
 
+/*Function to parse the instructions contained in the received data*/
 void instruction(void)
 {
     uint16_t temp_data_cnt = ESP8266DataIndex, parts = 0, i;
@@ -254,11 +262,7 @@ void instruction(void)
     iIndex = 0;
     runFlag = false;
 
-    /*while(ESP8266Data[ESP8266DataIndex] != ':')
-    {
-        if(ESP8266Data[ESP8266DataIndex] == '&') part_cnt++;
-        ESP8266DataIndex--;
-    }*/
+    /*Traverse to the substring "ISN" in the received data, count the number of instruction segments as well and increment the variable part_cnt at each segment*/
     while(ESP8266Data[ESP8266DataIndex] != 'I' || ESP8266Data[ESP8266DataIndex+1] != 'S' || ESP8266Data[ESP8266DataIndex+2] != 'N' || ESP8266Data[ESP8266DataIndex+3] != '=')
     {
         if(ESP8266Data[ESP8266DataIndex] == '&') part_cnt++;
@@ -267,12 +271,14 @@ void instruction(void)
     part_cnt -= 2;
     ESP8266DataIndex += 6;
 
+    /*Stores the instructions segments based on the part_cnt variable*/
     while(parts < part_cnt)
     {
         while(ESP8266Data[ESP8266DataIndex] != '=') ESP8266DataIndex++;
         ESP8266DataIndex++;
 
         dir = ESP8266Data[ESP8266DataIndex];
+
         if(dir == 'F' || dir == 'L' || dir == 'R' || dir == 'B')
         {
             ESP8266DataIndex++;
@@ -292,31 +298,18 @@ void instruction(void)
         parts++;
     }
 
+    /*Clears the ESP8266Data array*/
     while(temp_data_cnt > 0) ESP8266Data[--temp_data_cnt] = 0x00;
 }
 
-void sendSuccess(uint8_t ID)
+/*Function for sending success message*/
+void sendSuccess(void)
 {
-    unsigned short retries = 0;
-    bool sendFlag = false;
-
     index = 0;
 
-    /*while(UARTA2Data[UARTA2ReceiveIndex-1] != '>')
-    {
-        UART_Write("AT+CIPSENDEX=0,15\r\n");
-        while(retries > 0 && UARTA2Data[UARTA2ReceiveIndex-1] != '>')
-        {
-            __delay_cycles(24000);
-            retries--;
-        }
-        if(retries == 0) retries = 10;
-    }*/
-
-
+    /*Command to initialize data transmission*/
     UART_Write("AT+CIPSEND=0,15\r\n");
     __delay_cycles(240000);
-    //while(UARTA2Data[UARTA2ReceiveIndex-2] != '>' || UARTA2Data[UARTA2ReceiveIndex-1] != ' ');
     while(UARTA2Data[UARTA2ReceiveIndex-1] != '>')
     {
         UART_Write("AT+CIPSENDEX=0,15\r\n");
@@ -324,13 +317,14 @@ void sendSuccess(uint8_t ID)
     }
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
 
+    /*message to be sent*/
     UART_Write("HTTP/1.1 200 OK");
     __delay_cycles(24000);
-    //while(UARTA2Data[UARTA2ReceiveIndex-14] != 'S' || UARTA2Data[UARTA2ReceiveIndex-8] != 'E' || UARTA2Data[UARTA2ReceiveIndex-7] != 'N' || UARTA2Data[UARTA2ReceiveIndex-6] != 'D' || UARTA2Data[UARTA2ReceiveIndex-5] != ' ' || UARTA2Data[UARTA2ReceiveIndex-4] != 'O' || UARTA2Data[UARTA2ReceiveIndex-3] != 'K');
     while(UARTA2Data[UARTA2ReceiveIndex-15] != 'R' || UARTA2Data[UARTA2ReceiveIndex-14] != 'e' || UARTA2Data[UARTA2ReceiveIndex-13] != 'c' || UARTA2Data[UARTA2ReceiveIndex-12] != 'v');
     while(UARTA2ReceiveIndex > 0) UARTA2Data[--UARTA2ReceiveIndex] = 0x00;
 }
 
+/*Function to write to ESP8266 via UART*/
 void UART_Write(uint8_t *Data)
 {
     unsigned short i = 0;
@@ -341,40 +335,7 @@ void UART_Write(uint8_t *Data)
     }
 }
 
-void EUSCIA0_IRQHandler(void)
-{
-    uint8_t c;
-    uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
-
-    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
-
-    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
-    {
-        c = MAP_UART_receiveData(EUSCI_A0_BASE);
-        if(c == 8)
-        {
-            UARTA0ReceiveIndex--;
-            UARTA0Data[UARTA0ReceiveIndex] = 0;
-
-        }
-        else if(c == '\r')
-        {
-            UARTA0Data[UARTA0ReceiveIndex++] = '\r';
-            UARTA0Data[UARTA0ReceiveIndex++] = '\n';
-            MAP_UART_transmitData(EUSCI_A0_BASE, '\r');
-            MAP_UART_transmitData(EUSCI_A0_BASE, '\n');
-            UARTA0Receive = true;
-        }
-        else
-        {
-            UARTA0Data[UARTA0ReceiveIndex] = c;
-            UARTA0ReceiveIndex++;
-        }
-
-        MAP_UART_transmitData(EUSCI_A0_BASE, c);
-    }
-}
-
+/*UART ISR for ESP8266*/
 void EUSCIA2_IRQHandler(void)
 {
     uint8_t c;
@@ -385,6 +346,7 @@ void EUSCIA2_IRQHandler(void)
     {
         c = MAP_UART_receiveData(EUSCI_A2_BASE);
 
+        /*if statement to check if an instruction data is being received*/
         if(c == '+' && instructionFlag != true)
         {
             instructionFlag = true;
@@ -394,6 +356,7 @@ void EUSCIA2_IRQHandler(void)
         UARTA2Data[UARTA2ReceiveIndex] = c;
         UARTA2ReceiveIndex++;
 
+        /*if statements to check if end of an instruction data has been received*/
         if(instructionFlag == true)
         {
             if((c == '3' && UARTA2Data[UARTA2ReceiveIndex-2] == '2' && UARTA2Data[UARTA2ReceiveIndex-3] == '%') || (UARTA2Data[UARTA2ReceiveIndex-1] == '\n' && UARTA2Data[UARTA2ReceiveIndex-2] == '\r' && UARTA2Data[UARTA2ReceiveIndex-3] == '\n' && UARTA2Data[UARTA2ReceiveIndex-4] == '\r' && UARTA2Data[UARTA2ReceiveIndex-5] == 'e'))
@@ -414,9 +377,9 @@ void EUSCIA2_IRQHandler(void)
                 UARTA2Receive = true;
             }
         }
-
-        MAP_UART_transmitData(EUSCI_A0_BASE, c);
     }
+
+    /*if statements for changing LED based on connection*/
     if(UARTA2Data[UARTA2ReceiveIndex-9] == 'C' && UARTA2Data[UARTA2ReceiveIndex-3] == 'T' && UARTA2Data[UARTA2ReceiveIndex-2] == '\r')
     {
         MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN1);

@@ -5,6 +5,7 @@ volatile uint32_t SR04IntTimes;
 
 extern volatile bool instructionFlag;
 
+/*Function to set up the ultrasonic sensor*/
 void HCSR04Setup(void)
 {
     /* Timer_A UpMode Configuration Parameter */
@@ -39,6 +40,7 @@ void HCSR04Setup(void)
 
 }
 
+/*Function to get the distance using the ultrasonic sensor*/
 float getHCSR04Distance(void)
 {
     uint32_t pulsetime=0, tries = 0;
@@ -49,7 +51,7 @@ float getHCSR04Distance(void)
     __delay_cycles(240);
     GPIO_setOutputLowOnPin(GPIO_PORT_P3, GPIO_PIN6);
 
-    /* Wait for positive-edge */
+    /* Wait for positive-edge, also checks flag signifying arrival of new instruction data */
     while(GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN7) == 0 && instructionFlag != true)
     {
         if(tries > 279900) break;
@@ -62,7 +64,7 @@ float getHCSR04Distance(void)
     Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_UP_MODE);
 
     tries = 0;
-    /* Detects negative-edge */
+    /* Detects negative-edge, also checks flag signifying arrival of new instruction data */
     while(GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN7) == 1 && instructionFlag != true)
     {
         if(tries > 279900) break;
@@ -95,6 +97,7 @@ float getHCSR04Distance(void)
     return calculateddistance;
 }
 
+/*Timer A ISR for ultrasonic sensor*/
 void TA1_0_IRQHandler(void)
 {
     /* Increment global variable (count number of interrupt occurred) */

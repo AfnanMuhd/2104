@@ -6,7 +6,6 @@
 
 #include "Motor_Driver.h"
 
-//#define TICKPERIOD      46875
 #define TICKPERIOD2      62500
 
 void Initalise_encoderTimer(void);

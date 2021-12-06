@@ -15,3 +15,8 @@ void esp8266StartUp(void);
 void ESP8266Terminal(void);
 void UARTStartUp(void);
 void UART_Write(uint8_t *Data);
+void POST(void);
+void GET(uint8_t type);
+void setToken(void);
+void instruction(void);
+void sendSuccess(void);
