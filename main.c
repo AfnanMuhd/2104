@@ -26,17 +26,17 @@ void main()
     HCSR04Setup();
     UARTStartUp();
     MotorSetup();
-    IRSensorSetup();
+    //IRSensorSetup();
 
-    //WheelEncoderSetup();
+    WheelEncoderSetup();
 
     /*Reset GPIO of the ESP8266*/
     GPIO_setAsOutputPin(GPIO_PORT_P6, GPIO_PIN1);
 
     MAP_Interrupt_enableMaster();
-    setDirection('f');
-    //esp8266StartUp();
-    //Initalise_encoderTimer();
+    //setDirection('f');
+    esp8266StartUp();
+    Initalise_encoderTimer();
 
 
     ESP8266Terminal();

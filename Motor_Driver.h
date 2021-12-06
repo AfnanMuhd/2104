@@ -4,7 +4,9 @@
 
 void MotorSetup(void);
 void SetRightDirection(void);
+void SetTurnRightDirection(void);
 void SetLeftDirection(void);
+void SetTurnLeftDirection(void);
 void SetForwardDirection(void);
 void setDirection(char);
 void SetSpeeds(uint16_t lNotch, uint16_t rNotch);

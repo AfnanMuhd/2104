@@ -31,7 +31,6 @@ void readLine(void)
     else if(sensorLeft)
     {
         lineDir = 'r';
-
     }
     else if(sensorRight)
     {
@@ -41,7 +40,6 @@ void readLine(void)
     {
         lineDir='f';
     }
-
 }
 
 //void PORT6_IRQHandler(void)
