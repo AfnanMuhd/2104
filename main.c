@@ -23,9 +23,8 @@ void main()
     MAP_GPIO_setOutputHighOnPin(GPIO_PORT_P2, GPIO_PIN0);
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN1);
     MAP_GPIO_setOutputLowOnPin(GPIO_PORT_P2, GPIO_PIN2);
-
-    //HCSR04Setup();
-    //UARTStartUp();
+    HCSR04Setup();
+    UARTStartUp();
     MotorSetup();
     IRSensorSetup();
 

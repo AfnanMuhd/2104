@@ -48,12 +48,12 @@ void SetRightDirection(void)
     /*left motor*/
     GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN4);
     GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN5);
-    pwmConfig.dutyCycle = 9000;
+    pwmConfig.dutyCycle = 12000;
 
     /*right motor*/
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN7);
-    pwmConfig2.dutyCycle = 0;
+    pwmConfig2.dutyCycle = 6000;
 
 
 }
@@ -62,7 +62,7 @@ void SetLeftDirection(void)
     /*left motor*/
     GPIO_setOutputLowOnPin(GPIO_PORT_P5, GPIO_PIN4);
     GPIO_setOutputHighOnPin(GPIO_PORT_P5, GPIO_PIN5);
-    pwmConfig.dutyCycle = 0;
+    pwmConfig.dutyCycle = 6000;
 
     /*right motor*/
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
